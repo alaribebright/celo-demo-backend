@@ -17,12 +17,25 @@ const getUsers = async (req, res) => {
 
 const getUser = async (req, res) => {
   try {
-    const userId = req.params.id;
+    const userParam = req.params.id;
 
-    const user = await User.findById(userId);
+    const validateEmail = (validateString) => {
+      return String(validateString)
+        .toLowerCase()
+        .match(
+          /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+        );
+    };
 
-    //     "celoWalletAddress": "",
-    // "bscWalletAddress": "jane@mailinator.com",
+    let user = null;
+
+    console.log((!!validateEmail(userParam)))
+
+    if (!!validateEmail(userParam) === true) {
+      user = await User.findOne({ email: userParam });
+    } else {
+      user = await User.findById(userParam);
+    }
 
     res.status(200).json({
       status: "success",

@@ -4,22 +4,38 @@ const transferCreate = async (req, res) => {
   try {
     const { senderId, amount, receiverId, vendorId } = req.body;
 
-    const txnFees = +amount * 0.01 + +amount;
+    const transactionFees = +amount * 0.01 + +amount;
 
     const vendor = await Vendor.findById(vendorId);
 
-    const newVendor = { ...vendor }
+    const copiedVendor = { ...vendor };
 
-    const updateVendor = await Vendor.findByIdAndUpdate(vendorId, {
-      availableBalance: newVendor._doc.availableBalance - txnFees,
-    });
+    const vendorBalance =
+      process.env.DEFAULT_NETWORK === "celo"
+        ? copiedVendor._doc.liquidity[0].availableBalance
+        : copiedVendor._doc.liquidity[1].availableBalance;
 
-    // Locking the liquidity
-    // console.log(updateVendor);
+    if (vendorBalance >= amount + transactionFees) {
+      // lock the liquidity by reducing the user balance
+      copiedVendor._doc.liquidity[0].availableBalance =
+        vendorBalance - (amount + transactionFees);
+
+      console.log(copiedVendor);
+    } else {
+      throw new Error("This vendor cannot satisfy this operation");
+    }
+
+    // ?? LOCK liquidity by reducing availableBalance
+    // ?? Notify Vendor
+    // status: “awaiting sender”
+
+    // Res transfer + vendor
+
+    // Create a field called fees
 
     res.status(200).json({
       status: "success",
-      data: updateVendor,
+      data: "",
     });
   } catch (error) {
     console.log(error);

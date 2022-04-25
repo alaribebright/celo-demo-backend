@@ -10,7 +10,7 @@ const Vendor = require("../models/vendorModel");
 const getVendor = async (req, res) => {
   const amount = +req.query.amount;
 
-  const defaultNetwork = process.env.defaultNetwork;
+  const defaultNetwork = process.env.DEFAULT_NETWORK;
 
   // defaultNetwork=celo
 
