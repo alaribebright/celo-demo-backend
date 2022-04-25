@@ -21,17 +21,31 @@ const getUser = async (req, res) => {
 
     const user = await User.findById(userId);
 
-    console.log("THIS IS THE USER ", user);
+    //     "celoWalletAddress": "",
+    // "bscWalletAddress": "jane@mailinator.com",
 
-    res.status(200).json({
-      status: "success",
-      data: user,
-    });
+    // GET USER BALANCE FROM BLOCK CHAIN AND ADD TO USER OBJECT...
+
+    if (user) {
+      res.status(200).json({
+        status: "success",
+        data: user,
+      });
+    }
+    throw new Error("User not found");
   } catch (error) {
     res.status(404).json({
       status: "error",
     });
     console.log("FECHING USER ERORR", error);
+  }
+};
+
+const getUserBalance = async (req, res) => {
+  try {
+    // To query
+  } catch (error) {
+    //
   }
 };
 

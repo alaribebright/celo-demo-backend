@@ -1,15 +1,23 @@
 const express = require("express");
 const dotenv = require("dotenv");
 dotenv.config();
+const cors = require('cors')
 const connectDB = require("../helpers/connectDB");
-// const userRoutes = require("/routes/users.js");
 
 const app = express();
+app.use(cors())
+app.use(express.json())
 
 connectDB();
 
-// GET USER ROUTES
+// USER ROUTES
 app.use("/api/users", require("../routes/users").userRoutes);
+
+// VENDOR ROUTES
+app.use("/api/vendors", require("../routes/vendors").vendorRoutes);
+
+// TRANSFER ROUTES
+app.use("/api/transfer/create", require("../routes/transfer").transferRoutes);
 
 const PORT = process.env.PORT || 5000;
 
