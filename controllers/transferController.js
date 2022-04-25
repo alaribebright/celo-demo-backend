@@ -4,18 +4,23 @@ const transferCreate = async (req, res) => {
   try {
     const { senderId, amount, receiverId, vendorId } = req.body;
 
-    const txnFees = amount * 0.01 + amount;
+    const txnFees = +amount * 0.01 + +amount;
 
-    // vendor check via liquidity...
+    const vendor = await Vendor.findById(vendorId);
 
-    // Get the vendorID and query
-    const vendor = await Vendor.find({ _id: vendorId });
+    const newVendor = { ...vendor }
 
-    console.log(vendor)
+    const updateVendor = await Vendor.findByIdAndUpdate(vendorId, {
+      availableBalance: newVendor._doc.availableBalance - txnFees,
+    });
 
-    // ?? Check if the vendor via liquidity
-    // amount
-    // ?? LOCK liquidity by reducing availableBalance
+    // Locking the liquidity
+    // console.log(updateVendor);
+
+    res.status(200).json({
+      status: "success",
+      data: updateVendor,
+    });
   } catch (error) {
     console.log(error);
   }

@@ -24,20 +24,14 @@ const getUser = async (req, res) => {
     //     "celoWalletAddress": "",
     // "bscWalletAddress": "jane@mailinator.com",
 
-    // GET USER BALANCE FROM BLOCK CHAIN AND ADD TO USER OBJECT...
-
-    if (user) {
-      res.status(200).json({
-        status: "success",
-        data: user,
-      });
-    }
-    throw new Error("User not found");
+    res.status(200).json({
+      status: "success",
+      data: user,
+    });
   } catch (error) {
     res.status(404).json({
       status: "error",
     });
-    console.log("FECHING USER ERORR", error);
   }
 };
 
