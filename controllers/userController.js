@@ -27,19 +27,23 @@ const getUser = async (req, res) => {
         );
     };
 
-    let user = null;
+    let foundUser = null;
 
-    if (!!validateEmail(userParam) === true) {
-      user = await User.findOne({ email: userParam });
+    if (!!validateEmail(userParam)) {
+      foundUser = await User.findOne({ email: userParam });
     } else {
-      user = await User.findById(userParam);
+      foundUser = await User.findById(userParam);
     }
+    // $or: [{ _id: userParam }, { email: userParam }],
+
+    console.log(userParam);
 
     res.status(200).json({
       status: "success",
-      data: user,
+      data: foundUser,
     });
   } catch (error) {
+    console.log("ERROR FEC", error);
     res.status(404).json({
       status: "error",
     });
