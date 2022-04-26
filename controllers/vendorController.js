@@ -2,14 +2,19 @@ const Vendor = require("../models/vendorModel");
 
 const getVendor = async (req, res) => {
   try {
-    const amount = +req.query.amount;
+    const amount = parseFloat(req.query.amount);
+    const countryCode = req.query.countryCode;
 
     const defaultNetwork = process.env.DEFAULT_NETWORK;
 
+    // RATE // VENDOR_NAME // VENDOR_ID ??response
+
     if (defaultNetwork === "celo") {
-      const vendors = await Vendor.find({
-        $and: [{ celoBalance: { $gte: amount } }, { defaultNetwork: "celo" }],
-      });
+      const vendors = await Vendor.find()
+        .where("liquidity")
+        .gte(amount)
+        .where("countryCode")
+        .equals(countryCode);
 
       if (vendors.length) {
         return res.status(200).json({
@@ -19,7 +24,7 @@ const getVendor = async (req, res) => {
       }
     } else {
       const vendors = await Vendor.find({
-        $and: [{ celoBalance: { $gte: amount } }, { defaultNetwork: "bsc" }],
+        $and: [{ bscBalance: { $gte: amount } }, { defaultNetwork: "bsc" }],
       });
 
       if (vendors.length) {
@@ -30,8 +35,7 @@ const getVendor = async (req, res) => {
       }
     }
 
-    throw new Error("No Available vendors")
-
+    throw new Error("No Available vendors");
   } catch (error) {
     res.status(400).json({
       status: "fail",

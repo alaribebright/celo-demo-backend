@@ -1,19 +1,22 @@
 const Vendor = require("../models/vendorModel");
 
 const transferCreate = async (req, res) => {
+  console.log(req.body);
   try {
     const { senderId, amount, receiverId, vendorId } = req.body;
 
+    // Calculating the transaction Fees
     const transactionFees = +amount * 0.01 + +amount;
 
+    // Finding the vendor by ID
     const vendor = await Vendor.findById(vendorId);
-
-    const copiedVendor = { ...vendor };
 
     const vendorBalance =
       process.env.DEFAULT_NETWORK === "celo"
-        ? copiedVendor._doc.liquidity[0].availableBalance
-        : copiedVendor._doc.liquidity[1].availableBalance;
+        ? vendor.liquidity[0].availableBalance.availableBalance
+        : vendor.liquidity[1].availableBalance.availableBalance;
+
+    console.log(vendorBalance, "THE VENDOR BALANCE")
 
     if (vendorBalance >= amount + transactionFees) {
       // lock the liquidity by reducing the user balance
@@ -44,14 +47,10 @@ const transferCreate = async (req, res) => {
 
 module.exports = { transferCreate };
 
-// Transfer
-// Unique to a user
-
-// /api/transfer/create POST
-// senderId, amount, receiverId, vendorId
-// **Add fees to the amount (1% of amount) + amount
 // ?? Check if the vendor via liquidity
 // amount
 // ?? LOCK liquidity by reducing availableBalance
 // ?? Notify Vendor
 // status: “awaiting sender”
+
+// Res transfer + vendor

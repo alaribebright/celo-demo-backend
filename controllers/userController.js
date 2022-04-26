@@ -31,10 +31,8 @@ const getUser = async (req, res) => {
 
     if (!!validateEmail(userParam)) {
       foundUser = await User.findOne({ email: userParam });
-      console.log(foundUser)
     } else {
       foundUser = await User.findById(userParam);
-      console.log(foundUser)
     }
     // $or: [{ _id: userParam }, { email: userParam }],
 
