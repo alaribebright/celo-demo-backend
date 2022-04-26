@@ -29,8 +29,6 @@ const getUser = async (req, res) => {
 
     let user = null;
 
-    console.log((!!validateEmail(userParam)))
-
     if (!!validateEmail(userParam) === true) {
       user = await User.findOne({ email: userParam });
     } else {
