@@ -17,7 +17,7 @@ const getUsers = async (req, res) => {
 
 const getUser = async (req, res) => {
   try {
-    const userParam = req.params.id;
+    const userParam = req.params.param;
 
     const validateEmail = (validateString) => {
       return String(validateString)
