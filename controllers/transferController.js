@@ -1,32 +1,30 @@
 const Vendor = require("../models/vendorModel");
 
+const defaultNetwork = process.env.DEFAULT_NETWORK;
+
 const transferCreate = async (req, res) => {
-  console.log(req.body);
   try {
     const { senderId, amount, receiverId, vendorId } = req.body;
+    const parseAmount = parseFloat(amount);
 
     // Calculating the transaction Fees
-    const transactionFees = +amount * 0.01 + +amount;
+    const transactionFees = parseAmount * 0.01;
+    const totalFees = transactionFees + parseAmount;
 
     // Finding the vendor by ID
-    const vendor = await Vendor.findById(vendorId);
+    // We can first validate the ID
+    // Not best approach for the QUERY
+    const vendor = await Vendor.findOne({
+      [`liquidity.${defaultNetwork}.availableBalance`]: { $gte: totalFees },
+    })
+      .where("_id")
+      .equals(vendorId);
 
-    const vendorBalance =
-      process.env.DEFAULT_NETWORK === "celo"
-        ? vendor.liquidity[0].availableBalance.availableBalance
-        : vendor.liquidity[1].availableBalance.availableBalance;
-
-    console.log(vendorBalance, "THE VENDOR BALANCE")
-
-    if (vendorBalance >= amount + transactionFees) {
-      // lock the liquidity by reducing the user balance
-      copiedVendor._doc.liquidity[0].availableBalance =
-        vendorBalance - (amount + transactionFees);
-
-      console.log(copiedVendor);
-    } else {
-      throw new Error("This vendor cannot satisfy this operation");
-    }
+    if (!vendor)
+      return res.status(400).json({
+        status: "fail",
+        data: "Not enough balance for this operation",
+      });
 
     // ?? LOCK liquidity by reducing availableBalance
     // ?? Notify Vendor
@@ -38,7 +36,7 @@ const transferCreate = async (req, res) => {
 
     res.status(200).json({
       status: "success",
-      data: "",
+      data: vendor,
     });
   } catch (error) {
     console.log(error);
