@@ -1,41 +1,35 @@
 const Vendor = require("../models/vendorModel");
 
+const defaultNetwork = process.env.DEFAULT_NETWORK;
+
+const fetchVendors = async (amount, countryCode) => {
+  try {
+    const vendors = await Vendor.find({
+      [`liquidity.${defaultNetwork}.availableBalance`]: { $gte: amount },
+    })
+      .where("countryCode")
+      .equals(countryCode);
+    return vendors;
+  } catch (error) {
+    return error;
+  }
+};
+
 const getVendor = async (req, res) => {
   try {
     const amount = parseFloat(req.query.amount);
     const countryCode = req.query.countryCode;
 
-    const defaultNetwork = process.env.DEFAULT_NETWORK;
-
-    // RATE // VENDOR_NAME // VENDOR_ID ??response
-
-    if (defaultNetwork === "celo") {
-      const vendors = await Vendor.find()
-        .where("liquidity")
-        .gte(amount)
-        .where("countryCode")
-        .equals(countryCode);
-
-      if (vendors.length) {
-        return res.status(200).json({
-          status: "success",
-          data: vendors,
-        });
-      }
-    } else {
-      const vendors = await Vendor.find({
-        $and: [{ bscBalance: { $gte: amount } }, { defaultNetwork: "bsc" }],
-      });
-
-      if (vendors.length) {
-        return res.status(200).json({
-          status: "success",
-          data: vendors,
-        });
-      }
-    }
-
-    throw new Error("No Available vendors");
+    const availableVendors = await fetchVendors(amount, countryCode);
+    const formattedVendors = availableVendors.map((availableVendor) => ({
+      name: availableVendor.name,
+      rates: availableVendor.rates,
+      id: availableVendor._id,
+    }));
+    return res.status(200).json({
+      status: "success",
+      data: formattedVendors,
+    });
   } catch (error) {
     res.status(400).json({
       status: "fail",

@@ -1,5 +1,12 @@
 const mongoose = require("mongoose");
 
+const liquiditySchema = mongoose.Schema({
+  network: String,
+  walletAddress: String,
+  balance: Number,
+  availableBalance: Number,
+});
+
 const vendorSchema = mongoose.Schema(
   {
     name: { type: String, required: true },
@@ -16,15 +23,16 @@ const vendorSchema = mongoose.Schema(
       },
     },
     mPesa: { name: String, phoneNumber: String },
-    liquidity: [
-      {
-        network: String,
-        walletAddress: String,
-        balance: Number,
-        availableBalance: Number,
+    liquidity: {
+      celo: {
+        type: liquiditySchema,
+        required: true,
       },
-      { network: String, walletAddress: String, balance: Number },
-    ],
+      bsc: {
+        type: liquiditySchema,
+        required: true,
+      },
+    },
     rates: [
       { currency: String, rate: Number },
       { currency: String, rate: Number },
