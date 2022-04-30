@@ -33,7 +33,11 @@ const vendorSchema = mongoose.Schema(
         required: true,
       },
     },
-    rates: [
+    sellRates: [
+      { currency: String, rate: Number },
+      { currency: String, rate: Number },
+    ],
+    buyRates: [
       { currency: String, rate: Number },
       { currency: String, rate: Number },
     ],

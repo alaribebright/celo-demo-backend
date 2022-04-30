@@ -10,6 +10,10 @@ const userSchema = mongoose.Schema(
       type: String,
       required: true,
     },
+    localCurrency: {
+      type: String,
+      required: true,
+    },
     celoWalletAddress: {
       type: String,
       required: true,
@@ -40,6 +44,10 @@ const userSchema = mongoose.Schema(
       type: String,
       required: true,
     },
+    walletBalance: {
+      type: Number,
+      required: true
+    }
   },
   {
     timestamps: true,

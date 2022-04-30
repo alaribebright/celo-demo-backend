@@ -17,7 +17,7 @@ app.use("/api/users", require("../routes/users").userRoutes);
 app.use("/api/vendors", require("../routes/vendors").vendorRoutes);
 
 // TRANSFER ROUTES
-app.use("/api/transfer/create", require("../routes/transfer").transferRoutes);
+app.use("/api/transfers", require("../routes/transfer").transferRoutes);
 
 const PORT = process.env.PORT || 5000;
 
