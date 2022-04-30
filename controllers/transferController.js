@@ -1,18 +1,15 @@
 const Vendor = require("../models/vendorModel");
 const User = require("../models/userModel");
-const Order = require("../models/orderModel");
+const TransferOrder = require("../models/transferOrderModel");
 
 const defaultNetwork = process.env.DEFAULT_NETWORK;
 
-const createPendingP2PTransfer = async (req, res) => {
+const createPendingP2PTransfer = async (req, res, next) => {
   try {
     const { senderId, amount, receiverId, receiverCurrency, vendorId } = req.body;
     const parseAmount = parseFloat(amount);
 
-    // Calculating the transaction Fees
-    const transactionFees = parseAmount * 0.01;
-    const totalAmountUsd = transactionFees + parseAmount;
-
+     
     // find sender
     const sender = User.findById(senderId);
     // sender wallet balance
@@ -48,8 +45,8 @@ const createPendingP2PTransfer = async (req, res) => {
       });
     }
 
-    // create order -- pending
-    const order = await Order.create({
+    // create transfer -- pending
+    const transfer = await TransferOrder.create({
       localCurrency: sender.localCurrency,
       amountIntendedUsd: amount,
       fee: 0.1,
@@ -63,24 +60,65 @@ const createPendingP2PTransfer = async (req, res) => {
       vendorExchangeRate: 0
     });
 
-    res.status(200).json({
+    return res.status(200).json({
       status: "success",
-      data: order,
+      data: transfer,
     });
   } catch (error) {
-    console.log(error);
+    return next(error);
   }
 };
 
 const sendP2PTransferToVendor = async (req, res) => {
   try {
-    
+    const { orderId, amount } = req.body;
+
+    let transfer = await TransferOrder.findById(orderId);
+    const { orderStatus } = transfer;
+
+    if (orderStatus !== 'pending') {
+      return res.status(400).json({
+        status: "fail",
+        data: `Transfer Order is not pending`
+      });
+    }
+    transfer.orderStatus = 'funds_sent_to_vendor';
+    transfer = await transfer.save();
+    return res.status(200).json({
+      status: "success",
+      data: transfer,
+    });
   } catch (error) {
-    
+    return next(error);
   }
 };
 
-module.exports = { transferP2P };
+const vendorApproveP2PTransfer = async (req, res) => {
+  try {
+    const { orderId, amount } = req.body;
+
+    let transfer = await TransferOrder.findById(orderId);
+    const { orderStatus } = transfer;
+
+    if (orderStatus !== 'funds_sent_to_vendor') {
+      return res.status(400).json({
+        status: "fail",
+        data: `Transfer Order has not been confirmed by sender`
+      });
+    }
+    transfer.orderStatus = 'completed';
+    // create transaction
+    transfer = await transfer.save();
+    return res.status(200).json({
+      status: "success",
+      data: transfer,
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+module.exports = { createPendingP2PTransfer, sendP2PTransferToVendor };
 
 // ?? Check if the vendor via liquidity
 // amount

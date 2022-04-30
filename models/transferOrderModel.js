@@ -19,7 +19,7 @@ vendor - user link
 
 const mongoose = require("mongoose");
 
-const transferSchema = mongoose.Schema(
+const transferOrderSchema = mongoose.Schema(
   {
     localCurrency: {
         type: String,
@@ -76,6 +76,6 @@ const transferSchema = mongoose.Schema(
   }
 );
 
-const Transfer = mongoose.model("Transfer", transferSchema);
+const TransferOrder = mongoose.model("TransferOrder", transferOrderSchema);
 
-module.exports = Transfer;
+module.exports = TransferOrder;
