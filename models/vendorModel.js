@@ -40,4 +40,4 @@ const paymentChannelsArray = vendorSchema.path('paymentChannels');
 const mpesa = paymentChannelsArray.discriminator('mpesa', mPesaSchema);
 const Vendor = mongoose.model("Vendor", vendorSchema);
 
-module.exports = { Vendor, mpesa };
+module.exports = { Vendor };

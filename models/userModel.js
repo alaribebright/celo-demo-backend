@@ -1,8 +1,20 @@
 const mongoose = require("mongoose");
+const { paymentChannelSchema } = require("./paymentchannels/index");
+const { mPesaSchema } = require("./paymentchannels/mpesa");
+
+const walletSchema = mongoose.Schema({
+  network: String,
+  walletAddress: String,
+  balance: Number
+});
 
 const userSchema = mongoose.Schema(
   {
     name: {
+      type: String,
+      required: true,
+    },
+    email: {
       type: String,
       required: true,
     },
@@ -14,39 +26,14 @@ const userSchema = mongoose.Schema(
       type: String,
       required: true,
     },
-    celoWalletAddress: {
-      type: String,
-      required: true,
-    },
-    bscWalletAddress: {
-      type: String,
-      required: true,
-    },
-    bankDetails: {
-      name: {
-        type: String,
-        required: true,
+    paymentChannels: [paymentChannelSchema],
+    wallets: {
+      celo: {
+        type: walletSchema
       },
-      accountNumber: {
-        type: String,
-        required: true,
+      bsc: {
+        type: walletSchema
       },
-      bankName: {
-        type: String,
-        required: true,
-      },
-    },
-    mPesa: {
-      name: String,
-      phoneNumber: String,
-    },
-    email: {
-      type: String,
-      required: true,
-    },
-    walletBalance: {
-      type: Number,
-      required: true
     }
   },
   {
@@ -54,6 +41,9 @@ const userSchema = mongoose.Schema(
   }
 );
 
+const paymentChannelsArray = userSchema.path('paymentChannels');
+const mpesa = paymentChannelsArray.discriminator('mpesa', mPesaSchema);
+
 const User = mongoose.model("User", userSchema);
 
-module.exports = User;
+module.exports = { User };
