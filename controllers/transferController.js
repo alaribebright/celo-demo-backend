@@ -1,6 +1,7 @@
 const Vendor = require("../models/vendorModel");
 const User = require("../models/userModel");
 const TransferOrder = require("../models/transferOrderModel");
+const Transaction = require("../models/transactionModel");
 
 const defaultNetwork = process.env.DEFAULT_NETWORK;
 
@@ -8,6 +9,8 @@ const createPendingP2PTransfer = async (req, res, next) => {
   try {
     const { senderId, amount, receiverId, receiverCurrency, vendorId } = req.body;
     const parseAmount = parseFloat(amount);
+    const fee = 0.1;
+    const totalAmountUsd = parseAmount + fee;
 
      
     // find sender
@@ -95,7 +98,7 @@ const sendP2PTransferToVendor = async (req, res) => {
 
 const vendorApproveP2PTransfer = async (req, res) => {
   try {
-    const { orderId, amount } = req.body;
+    const { orderId, amount, onChainTrx } = req.body;
 
     let transfer = await TransferOrder.findById(orderId);
     const { orderStatus } = transfer;
@@ -106,19 +109,28 @@ const vendorApproveP2PTransfer = async (req, res) => {
         data: `Transfer Order has not been confirmed by sender`
       });
     }
-    transfer.orderStatus = 'completed';
     // create transaction
+    const transaction = await Transaction.create({
+      senderId: transfer.orderInitiator,
+      recepientId: transfer.orderRecepient,
+      // creditAmount: ,
+      debitAmount: transfer.amount,
+      orderId: transfer._id,
+      transactionType: transfer.orderType
+    });
+    transfer.orderStatus = 'completed';
+    transfer.onChainTransactionId = onChainTrx;
     transfer = await transfer.save();
     return res.status(200).json({
       status: "success",
-      data: transfer,
+      data: {transfer, transaction},
     });
   } catch (error) {
     return next(error);
   }
 };
 
-module.exports = { createPendingP2PTransfer, sendP2PTransferToVendor };
+module.exports = { createPendingP2PTransfer, sendP2PTransferToVendor, vendorApproveP2PTransfer };
 
 // ?? Check if the vendor via liquidity
 // amount

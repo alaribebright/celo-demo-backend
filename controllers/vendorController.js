@@ -1,14 +1,22 @@
-const Vendor = require("../models/vendorModel");
+const { Vendor } = require("../models/vendorModel");
 
 const defaultNetwork = process.env.DEFAULT_NETWORK;
 
-const fetchVendors = async (amount, countryCode) => {
+const fetchVendors = async (amount, countryCode, orderType) => {
+  let vendors = null;
   try {
-    const vendors = await Vendor.find({
-      [`liquidity.${defaultNetwork}.availableBalance`]: { $gte: amount },
-    })
-      .where("countryCode")
-      .equals(countryCode);
+    if (orderType === 'deposit' || 'transfer') {
+      vendors = await Vendor.find({
+        [`liquidity.${defaultNetwork}.availableBalance`]: { $gte: amount },
+        countryCode
+      }).select('name rates _id').sort({ [`rates.${countryCode}.buyRate`]: 1 }).exec();
+    } else {
+      // its a withdrawal, so the vendor is buying $
+      vendors = await Vendor.find({
+        [`liquidity.${defaultNetwork}.availableBalance`]: { $gte: amount },
+        countryCode
+      }).select('name rates _id').sort({ [`rates.${countryCode}.sellRate`]: 1 }).exec();
+    }
     return vendors;
   } catch (error) {
     return error;
@@ -17,18 +25,12 @@ const fetchVendors = async (amount, countryCode) => {
 
 const getVendor = async (req, res) => {
   try {
-    const amount = parseFloat(req.query.amount);
-    const countryCode = req.query.countryCode;
+    const { amount, country, orderType } = req.query;
 
-    const availableVendors = await fetchVendors(amount, countryCode);
-    const formattedVendors = availableVendors.map((availableVendor) => ({
-      name: availableVendor.name,
-      rates: availableVendor.rates,
-      id: availableVendor._id,
-    }));
+    const availableVendors = await fetchVendors(parseFloat(amount), country, orderType);
     return res.status(200).json({
       status: "success",
-      data: formattedVendors,
+      data: availableVendors,
     });
   } catch (error) {
     res.status(400).json({

@@ -18,7 +18,10 @@ const transactionSchema = mongoose.Schema(
         type: Number,
         required: true
     },
-    orderId: {},
+    orderId: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true
+    },
     transactionType: {
         type: String,
         enum : ['transfer', 'deposit', 'withdrawal'],

@@ -1,4 +1,6 @@
 const mongoose = require("mongoose");
+const { paymentChannelSchema } = require("./paymentchannels/index");
+const { mPesaSchema } = require("./paymentchannels/mpesa");
 
 const liquiditySchema = mongoose.Schema({
   network: String,
@@ -14,43 +16,28 @@ const vendorSchema = mongoose.Schema(
       type: String,
       required: true,
     },
-    celoWalletAddress: { type: String },
-    bankDetails: {
-      details: {
-        bankName: String,
-        name: String,
-        number: String,
-      },
-    },
-    mPesa: { name: String, phoneNumber: String },
+    paymentChannels: [paymentChannelSchema],
     liquidity: {
       celo: {
-        type: liquiditySchema,
-        required: true,
+        type: liquiditySchema
       },
       bsc: {
-        type: liquiditySchema,
-        required: true,
+        type: liquiditySchema
       },
     },
-    sellRates: [
-      { currency: String, rate: Number },
-      { currency: String, rate: Number },
+    rates: [
+      { currency: String, sellRate: Number, buyRate: Number }
     ],
-    buyRates: [
-      { currency: String, rate: Number },
-      { currency: String, rate: Number },
-    ],
-    bscBalance: Number,
-    celoBalance: Number,
-    defaultNetwork: String,
-    availableBalance: Number,
+    defaultNetwork: String
   },
   {
     timestamps: true,
   }
 );
 
+const paymentChannelsArray = vendorSchema.path('paymentChannels');
+
+const mpesa = paymentChannelsArray.discriminator('mpesa', mPesaSchema);
 const Vendor = mongoose.model("Vendor", vendorSchema);
 
-module.exports = Vendor;
+module.exports = { Vendor, mpesa };
