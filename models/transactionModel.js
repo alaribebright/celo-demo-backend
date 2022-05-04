@@ -29,7 +29,11 @@ const transactionSchema = mongoose.Schema(
     },
     onChainTransactionId: {
         type: String
-    }
+    },
+    transactionStatus: {
+        type: String,
+        enum : ['pending', 'success', 'failed'],
+        required: true   },    
   },
   {
     timestamps: true,
