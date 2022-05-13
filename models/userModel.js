@@ -17,12 +17,17 @@ const userSchema = mongoose.Schema(
     email: {
       type: String,
       required: true,
+      unique: true,
     },
     countryCode: {
       type: String,
       required: true,
     },
     localCurrency: {
+      type: String,
+      required: true,
+    },
+    password: {
       type: String,
       required: true,
     },
@@ -44,6 +49,4 @@ const userSchema = mongoose.Schema(
 const paymentChannelsArray = userSchema.path('paymentChannels');
 const mpesa = paymentChannelsArray.discriminator('mpesa', mPesaSchema);
 
-const User = mongoose.model("User", userSchema);
-
-module.exports = { User };
+module.exports = mongoose.model("User", userSchema);
